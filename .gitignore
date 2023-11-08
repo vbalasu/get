@@ -3,3 +3,5 @@
 get/.chalice/
 get/__pycache__/
 get/venv/
+get/chalicelib/*.json
+get/.vscode/

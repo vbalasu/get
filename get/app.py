@@ -2,10 +2,31 @@ from chalice import Chalice
 
 app = Chalice(app_name='get')
 
+def read_spreadsheet(spreadsheet_id, sheet_name, credential_file):
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(credential_file, ['https://www.googleapis.com/auth/spreadsheets.readonly'])
+    gc = gspread.authorize(credentials)
+    sh = gc.open_by_key(spreadsheet_id)
+    worksheet = sh.worksheet(sheet_name)
+    data = worksheet.get_all_records()
+    return data
+
+@app.route('/sheets', cors=True)
+def sheets():
+    """USAGE: curl "http://127.0.0.1:8000/sheets?spreadsheet_id=1pYY4glskbi8RMXXPaH4SGJI5O-J_tXzAq1uImt2siv4&sheet_name=customers" 
+              curl "https://get.cloudmatica.com/sheets?spreadsheet_id=1pYY4glskbi8RMXXPaH4SGJI5O-J_tXzAq1uImt2siv4&sheet_name=customers" 
+              assuming the spreadsheet has been shared with sheets@cloudmatica.iam.gserviceaccount.com """
+    credential_file = 'chalicelib/cloudmatica-99fecc8e9b94.json'
+    spreadsheet_id = app.current_request.query_params.get('spreadsheet_id')
+    sheet_name = app.current_request.query_params.get('sheet_name')
+    print(spreadsheet_id, sheet_name, credential_file)
+    return read_spreadsheet(spreadsheet_id, sheet_name, credential_file)
 
 @app.route('/', cors=True)
 def index():
-    """USAGE: curl "http://127.0.0.1:8000?url=https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population" """
+    """USAGE: curl "http://127.0.0.1:8000?url=https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population"
+              curl "https://get.cloudmatica.com?url=https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population" """
     url = app.current_request.query_params.get('url')
     if url is None:
         return 'Missing url'
