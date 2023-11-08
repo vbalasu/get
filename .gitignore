@@ -5,3 +5,4 @@ get/__pycache__/
 get/venv/
 get/chalicelib/*.json
 get/.vscode/
+node_modules/
